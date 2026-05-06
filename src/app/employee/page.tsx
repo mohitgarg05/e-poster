@@ -281,7 +281,7 @@ export default function EmployeeDashboardPage() {
             />
           </label>
           <label className="block text-sm font-medium text-slate-700">
-            Hospital
+            Hospital Name
             <input
               required
               placeholder="e.g. City Care Hospital"
