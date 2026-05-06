@@ -26,15 +26,6 @@ export default function Home() {
               </a>
             </div>
           </div>
-          <aside className="panel-card p-8">
-            <h2 className="text-lg font-semibold text-slate-900">Platform Includes</h2>
-            <ul className="mt-4 space-y-3 text-sm text-slate-600">
-              <li>Template library with custom name color</li>
-              <li>Employee login from CSV-imported users only</li>
-              <li>Doctor poster preview and one-click download</li>
-              <li>Audit of who created which poster and when</li>
-            </ul>
-          </aside>
         </div>
       </section>
     </main>
