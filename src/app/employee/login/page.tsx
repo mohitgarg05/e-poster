@@ -36,7 +36,7 @@ export default function EmployeeLoginPage() {
       <section className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-6">
         <div className="panel-card p-7">
           <p className="text-xs font-semibold tracking-wide text-orange-600">EMPLOYEE ACCESS</p>
-          <h1 className="mt-2 text-2xl font-bold text-slate-900">Welcome back</h1>
+          <h1 className="mt-2 text-2xl font-bold text-slate-900">Welcome</h1>
           <p className="mt-1 text-sm text-slate-600">Sign in with your employee email and employee code.</p>
           <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
             <div>

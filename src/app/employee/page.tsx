@@ -2,10 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
+import Cropper, { Area, Point } from "react-easy-crop";
 import { EMPLOYEE_TOKEN_KEY, getStoredToken, removeStoredToken } from "@/lib/client-auth";
 import { readFileAsDataUrl } from "@/lib/image-utils";
 import { createGeneratedPoster, getEmployeePosters } from "@/services/employee.service";
 import { Poster } from "@/types/poster";
+import "react-easy-crop/react-easy-crop.css";
 
 type EmployeePosterForm = {
   posterId: string;
@@ -69,10 +71,46 @@ function drawImageCover(
   context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, targetX, targetY, targetWidth, targetHeight);
 }
 
+function createImage(source: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Failed loading doctor image"));
+    image.src = source;
+  });
+}
+
+async function getCroppedImageDataUrl(imageSrc: string, crop: Area) {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement("canvas");
+  canvas.width = crop.width;
+  canvas.height = crop.height;
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("Canvas is not supported");
+  }
+  context.drawImage(
+    image,
+    crop.x,
+    crop.y,
+    crop.width,
+    crop.height,
+    0,
+    0,
+    crop.width,
+    crop.height,
+  );
+  return canvas.toDataURL("image/png");
+}
+
 export default function EmployeeDashboardPage() {
   const [token] = useState(() => getStoredToken(EMPLOYEE_TOKEN_KEY));
   const [posters, setPosters] = useState<Poster[]>([]);
   const [doctorImageBase64, setDoctorImageBase64] = useState("");
+  const [doctorCroppedImageBase64, setDoctorCroppedImageBase64] = useState("");
+  const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [finalPosterDataUrl, setFinalPosterDataUrl] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -114,11 +152,17 @@ export default function EmployeeDashboardPage() {
     }
     const dataUrl = await readFileAsDataUrl(file);
     setDoctorImageBase64(dataUrl);
+    setDoctorCroppedImageBase64("");
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedAreaPixels(null);
+    setFinalPosterDataUrl("");
+    setError("");
   }
 
   async function generatePosterPreview(values: EmployeePosterForm) {
     setError("");
-    if (!selectedPoster || !doctorImageBase64) {
+    if (!selectedPoster || !doctorImageBase64 || !croppedAreaPixels) {
       setError("Please select a poster and doctor image");
       return;
     }
@@ -139,7 +183,6 @@ export default function EmployeeDashboardPage() {
     }
 
     const template = new Image();
-    const doctor = new Image();
     await Promise.all([
       new Promise<void>((resolve, reject) => {
         template.onload = () => resolve();
@@ -147,12 +190,10 @@ export default function EmployeeDashboardPage() {
         template.crossOrigin = "anonymous";
         template.src = selectedPoster.templateImageUrl;
       }),
-      new Promise<void>((resolve, reject) => {
-        doctor.onload = () => resolve();
-        doctor.onerror = () => reject(new Error("Failed loading doctor image"));
-        doctor.src = doctorImageBase64;
-      }),
     ]);
+    const croppedDoctorDataUrl = await getCroppedImageDataUrl(doctorImageBase64, croppedAreaPixels);
+    setDoctorCroppedImageBase64(croppedDoctorDataUrl);
+    const doctor = await createImage(croppedDoctorDataUrl);
 
     context.drawImage(template, 0, 0, canvas.width, canvas.height);
     const layout = UNIFORM_LAYOUT;
@@ -187,7 +228,7 @@ export default function EmployeeDashboardPage() {
   }
 
   async function saveAndDownload() {
-    if (!selectedPoster || !doctorImageBase64 || !finalPosterDataUrl || !token) {
+    if (!selectedPoster || !doctorCroppedImageBase64 || !finalPosterDataUrl || !token) {
       setError("Please generate poster first");
       return;
     }
@@ -203,7 +244,7 @@ export default function EmployeeDashboardPage() {
         doctorCredentials: values.doctorCredentials,
         doctorHospital: values.doctorHospital,
         doctorCity: values.doctorCity,
-        doctorImageBase64,
+        doctorImageBase64: doctorCroppedImageBase64,
         finalPosterBase64: finalPosterDataUrl,
       });
 
@@ -308,6 +349,36 @@ export default function EmployeeDashboardPage() {
               className="soft-input mt-1.5"
             />
           </label>
+          {doctorImageBase64 ? (
+            <div>
+              <p className="mb-2 text-sm font-medium text-slate-700">Adjust Crop</p>
+              <div className="relative h-72 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+                <Cropper
+                  image={doctorImageBase64}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={DOCTOR_FRAME_ASPECT_RATIO}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={(_, areaPixels) => setCroppedAreaPixels(areaPixels)}
+                  objectFit="cover"
+                  showGrid={false}
+                />
+              </div>
+              <label className="mt-3 block text-xs font-medium text-slate-600">
+                Zoom
+                <input
+                  type="range"
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  value={zoom}
+                  onChange={(event) => setZoom(Number(event.target.value))}
+                  className="mt-1 w-full accent-orange-500"
+                />
+              </label>
+            </div>
+          ) : null}
           <button type="submit" className="w-full rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700">
             Generate Preview
           </button>
