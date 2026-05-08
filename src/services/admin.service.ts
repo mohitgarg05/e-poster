@@ -83,15 +83,6 @@ export async function getAdminUsers(token: string) {
   return response.data;
 }
 
-export async function importAdminUsers(token: string, csvText: string) {
-  const response = await http.post<{ imported: number }>(
-    "/admin/users/import",
-    { csvText },
-    { headers: authHeader(token) },
-  );
-  return response.data;
-}
-
 export async function toggleAdminUser(token: string, userId: string, isActive: boolean) {
   await http.patch(
     `/admin/users/${userId}`,

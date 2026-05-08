@@ -28,12 +28,6 @@ export default function AdminUsersPage() {
 
   return (
     <AdminShell activeTab="users" title="Users">
-      <div className="mb-4 flex items-center justify-end">
-        <Link href="/admin/users/import" className="primary-btn px-4 py-2 text-sm">
-          Import Users
-        </Link>
-      </div>
-
       {error ? <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
 
       <section className="panel-card overflow-x-auto">
