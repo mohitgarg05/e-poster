@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { AxiosError } from "axios";
 import { AdminShell } from "../_components/admin-shell";
 import { useAdminToken } from "../_components/use-admin-token";
-import { deactivateAdminPoster, getAdminPosters } from "@/services/admin.service";
+import { deactivateAdminPoster, getAdminPosters, toggleAdminPoster } from "@/services/admin.service";
 import { Poster } from "@/types/poster";
 
 export default function AdminPostersPage() {
@@ -35,6 +35,17 @@ export default function AdminPostersPage() {
       await loadPosters(token);
     } catch (err) {
       setError(toMessage(err, "Failed deactivating poster"));
+    }
+  }
+
+  async function activatePoster(posterId: string) {
+    if (!token) return;
+    setError("");
+    try {
+      await toggleAdminPoster(token, posterId, true);
+      await loadPosters(token);
+    } catch (err) {
+      setError(toMessage(err, "Failed activating poster"));
     }
   }
 
@@ -96,7 +107,14 @@ export default function AdminPostersPage() {
                     >
                       Deactivate
                     </button>
-                  ) : null}
+                  ) : (
+                    <button
+                      onClick={() => activatePoster(poster._id)}
+                      className="ml-2 rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-emerald-700"
+                    >
+                      Activate
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

@@ -16,10 +16,10 @@ type EmployeePosterForm = {
 };
 
 const UNIFORM_LAYOUT = {
-  namePosition: { x: 400, y: 160 },
-  credentialsPosition: { x: 400, y: 220 },
-  hospitalPosition: { x: 400, y: 280 },
-  cityPosition: { x: 400, y: 340 },
+  namePosition: { x: 415, y: 160 },
+  credentialsPosition: { x: 415, y: 220 },
+  hospitalPosition: { x: 415, y: 280 },
+  cityPosition: { x: 415, y: 340 },
   doctorImagePosition: { x: 78, y: 105, width: 285, height: 304 },
 };
 

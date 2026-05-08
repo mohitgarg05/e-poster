@@ -61,6 +61,14 @@ export async function deactivateAdminPoster(token: string, posterId: string) {
   });
 }
 
+export async function toggleAdminPoster(token: string, posterId: string, isActive: boolean) {
+  await http.patch(
+    `/admin/posters/${posterId}`,
+    { isActive },
+    { headers: authHeader(token) },
+  );
+}
+
 export async function updateAdminPoster(token: string, posterId: string, payload: UpdatePosterPayload) {
   const response = await http.patch<{ poster: Poster }>(`/admin/posters/${posterId}`, payload, {
     headers: authHeader(token),
