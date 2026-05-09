@@ -357,6 +357,8 @@ export default function EmployeeDashboardPage() {
                   image={doctorImageBase64}
                   crop={crop}
                   zoom={zoom}
+                  minZoom={0.1}
+                  maxZoom={4}
                   aspect={DOCTOR_FRAME_ASPECT_RATIO}
                   onCropChange={setCrop}
                   onZoomChange={setZoom}
@@ -369,8 +371,8 @@ export default function EmployeeDashboardPage() {
                 Zoom
                 <input
                   type="range"
-                  min={1}
-                  max={3}
+                  min={0.1}
+                  max={4}
                   step={0.1}
                   value={zoom}
                   onChange={(event) => setZoom(Number(event.target.value))}
